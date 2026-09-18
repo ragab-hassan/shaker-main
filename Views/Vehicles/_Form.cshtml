@@ -1,0 +1,21 @@
+@model Vehicle
+<div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+<div class="row g-3">
+<div class="col-md-3"><label asp-for="VehicleCode" class="form-label"></label><input asp-for="VehicleCode" class="form-control" placeholder="مثال: CAR" /><span asp-validation-for="VehicleCode" class="text-danger"></span></div>
+<div class="col-md-3"><label asp-for="VehicleNumber" class="form-label"></label><input asp-for="VehicleNumber" class="form-control" placeholder="مثال: 01" /><span asp-validation-for="VehicleNumber" class="text-danger"></span></div>
+<div class="col-md-3"><label asp-for="VehicleType" class="form-label"></label><select asp-for="VehicleType" class="form-select" id="vehicleType"><option value="">-- اختر النوع --</option><option value="ملاكي">ملاكي - 4 أفراد</option><option value="هاي اس">هاي اس - 14 فرد</option></select><span asp-validation-for="VehicleType" class="text-danger"></span></div>
+<div class="col-md-3"><label asp-for="Capacity" class="form-label"></label><input asp-for="Capacity" class="form-control" id="capacity" readonly /></div>
+<div class="col-md-4"><label asp-for="ProjectId" class="form-label">المشروع</label><select asp-for="ProjectId" class="form-select"><option value="">-- اختر المشروع --</option>@foreach(var p in ViewBag.Projects){<option value="@p.Id">@p.Name</option>}</select><span asp-validation-for="ProjectId" class="text-danger"></span></div>
+<div class="col-md-4"><label asp-for="DriverEmployeeId" class="form-label">السائق</label><select asp-for="DriverEmployeeId" class="form-select"><option value="">-- بدون سائق --</option>@foreach(var e in ViewBag.Drivers){<option value="@e.Id">@e.FullName</option>}</select></div>
+<div class="col-md-4"><label asp-for="Route" class="form-label"></label><input asp-for="Route" class="form-control" placeholder="مثال: السكن ← المشروع" /></div>
+<div class="col-md-12"><label class="form-label">رقم اللوحة الناتج</label><input class="form-control" value="@(string.IsNullOrEmpty(Model.PlateNumber) ? "سيظهر بعد إدخال الكود والرقم" : Model.PlateNumber)" id="platePreview" readonly /></div>
+<div class="col-md-12"><label asp-for="Notes" class="form-label"></label><textarea asp-for="Notes" class="form-control" rows="2"></textarea></div>
+<div class="col-md-12"><div class="form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label">العربية نشطة</label></div></div>
+</div>
+<script>
+(function(){
+ const code=document.getElementById('VehicleCode'), num=document.getElementById('VehicleNumber'), type=document.getElementById('vehicleType'), cap=document.getElementById('capacity'), plate=document.getElementById('platePreview');
+ function refresh(){ cap.value=type.value==='ملاكي'?'4':type.value==='هاي اس'?'14':''; plate.value=(code.value.trim()&&num.value.trim())?(code.value.trim()+'-'+num.value.trim()):'سيظهر بعد إدخال الكود والرقم'); }
+ code.addEventListener('input',refresh); num.addEventListener('input',refresh); type.addEventListener('change',refresh); refresh();
+})();
+</script>

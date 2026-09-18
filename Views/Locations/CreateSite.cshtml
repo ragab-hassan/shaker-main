@@ -1,0 +1,2 @@
+@model Site
+<h2>إضافة موقع</h2><form method="post" class="row g-3">@Html.AntiForgeryToken()<div class="col-md-6"><label class="form-label">اسم المكان</label><input class="form-control" asp-for="Name"/></div><div class="col-md-6"><label class="form-label">العنوان</label><input class="form-control" asp-for="Address"/></div><div><button class="btn btn-primary">حفظ</button> <a class="btn btn-secondary" asp-action="Index">إلغاء</a></div></form>

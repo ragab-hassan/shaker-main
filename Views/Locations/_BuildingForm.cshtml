@@ -1,0 +1,2 @@
+@model Building
+<div asp-validation-summary="ModelOnly" class="text-danger"></div><div class="mb-3"><label asp-for="SiteId" class="form-label">الموقع</label><select asp-for="SiteId" class="form-select">@foreach(var s in ViewBag.Sites){<option value="@s.Id">@s.Name</option>}</select></div><div class="row"><div class="col-md-4"><label asp-for="Number" class="form-label"></label><input asp-for="Number" class="form-control" type="number" /></div><div class="col-md-8"><label asp-for="Name" class="form-label"></label><input asp-for="Name" class="form-control" /></div></div>

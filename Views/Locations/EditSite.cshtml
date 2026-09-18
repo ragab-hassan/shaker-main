@@ -1,0 +1,2 @@
+@model Site
+<h2>تعديل الموقع</h2><form asp-action="EditSite" method="post"><input type="hidden" asp-for="Id" /><partial name="_SiteForm" model="Model" /><button class="btn btn-success mt-3">حفظ</button> <a asp-action="Index" class="btn btn-secondary mt-3">إلغاء</a></form>

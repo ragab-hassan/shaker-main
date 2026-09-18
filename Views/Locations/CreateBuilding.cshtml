@@ -1,0 +1,2 @@
+@model Building
+<h2>إضافة عمارة</h2><form method="post" class="row g-3">@Html.AntiForgeryToken()<input type="hidden" asp-for="SiteId"/><div class="col-md-4"><label class="form-label">رقم العمارة</label><input class="form-control" asp-for="Number"/></div><div class="col-md-8"><label class="form-label">اسم العمارة</label><input class="form-control" asp-for="Name"/></div><div><button class="btn btn-primary">حفظ</button> <a class="btn btn-secondary" asp-action="Index">إلغاء</a></div></form>

@@ -1,0 +1,38 @@
+@model IEnumerable<PendingHousingAssignment>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>تعيينات منتظرة</h2>
+    <a class="btn btn-primary" asp-action="Create">+ تعيين جديد</a>
+</div>
+
+<table class="table table-hover bg-white align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>اسم الموظف</th>
+            <th>الوظيفة</th>
+            <th>المشروع</th>
+            <th>المنطقة</th>
+            <th>الغرفة</th>
+            <th>تاريخ التسكين</th>
+            <th>الحالة</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var x in Model)
+        {
+            <tr>
+                <td>@x.EmployeeName</td>
+                <td>@x.JobTitle</td>
+                <td>@x.Project?.Name</td>
+                <td>@x.Site?.Name</td>
+                <td>@(x.Room != null ? $"{x.Room.Apartment?.Building?.Site?.Name} / عمارة {x.Room.Apartment?.Building?.Number} / شقة {x.Room.Apartment?.Number} / غرفة {x.Room.Number}" : "-")</td>
+                <td>@x.HousingDate.ToString("yyyy/MM/dd")</td>
+                <td>@(x.IsApplied ? "تم التسكين" : "منتظر")</td>
+                <td class="text-nowrap">
+                    <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@x.Id">تعديل</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@x.Id" onclick="return confirm('حذف التعيين؟')">حذف</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

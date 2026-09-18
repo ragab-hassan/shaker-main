@@ -1,0 +1,54 @@
+@model PendingHousingAssignment
+<h2>تعيين منتظر</h2>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="EmployeeName" class="form-label">اسم الموظف</label>
+            <input asp-for="EmployeeName" class="form-control" placeholder="اكتب اسم الموظف" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="JobTitle" class="form-label">الوظيفة</label>
+            <input asp-for="JobTitle" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ProjectId" class="form-label">المشروع</label>
+            <select asp-for="ProjectId" class="form-select">
+                <option value="">-- اختر المشروع --</option>
+                @foreach (var p in ViewBag.Projects)
+                {
+                    <option value="@p.Id">@p.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="SiteId" class="form-label">المنطقة</label>
+            <select asp-for="SiteId" class="form-select">
+                <option value="">-- اختر المنطقة --</option>
+                @foreach (var s in ViewBag.Sites)
+                {
+                    <option value="@s.Id">@s.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-12">
+            <label asp-for="RoomId" class="form-label">الغرفة</label>
+            <select asp-for="RoomId" class="form-select">
+                <option value="">-- اختر غرفة شاغرة --</option>
+                @foreach (var r in ViewBag.Rooms)
+                {
+                    <option value="@r.Id">@r.Apartment?.Building?.Site?.Name - عمارة @r.Apartment?.Building?.Number - شقة @r.Apartment?.Number - غرفة @r.Number</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-12">
+            <label asp-for="HousingDate" class="form-label">تاريخ التسكين</label>
+            <input asp-for="HousingDate" type="date" class="form-control" />
+        </div>
+    </div>
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">حفظ</button>
+        <a asp-action="Index" class="btn btn-secondary">إلغاء</a>
+    </div>
+</form>

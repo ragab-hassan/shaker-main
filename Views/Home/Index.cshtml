@@ -1,0 +1,115 @@
+@model HousingManagementWeb.Models.DashboardViewModel
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div><h2 class="fw-bold mb-1">لوحة التحكم</h2><p class="text-muted mb-0">ملخص شامل للموظفين والمشاريع والعربيات والسكن.</p></div>
+</div>
+
+<div class="row g-2 mb-4 dashboard-stat-grid">
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Employees" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">إجمالي الموظفين</div>
+                <div class="display-5 fw-bold">@Model.TotalEmployees</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Projects" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">إجمالي المشاريع</div>
+                <div class="display-5 fw-bold">@Model.TotalProjects</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Vehicles" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">إجمالي السيارات</div>
+                <div class="display-5 fw-bold">@Model.TotalVehicles</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Vehicles" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">إجمالي الركاب</div>
+                <div class="display-5 fw-bold">@Model.TotalPassengers</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Locations" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">إجمالي الغرف</div>
+                <div class="display-5 fw-bold">@Model.TotalRooms</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="row g-2 mb-4 dashboard-stat-grid">
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Locations" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">الغرف المشغولة</div>
+                <div class="display-5 fw-bold">@Model.OccupiedRooms</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Locations" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">الغرف الفارغة</div>
+                <div class="display-5 fw-bold">@Model.EmptyRooms</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Locations" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">العمارات</div>
+                <div class="display-5 fw-bold">@Model.TotalBuildings</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Locations" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">المناطق</div>
+                <div class="display-5 fw-bold">@Model.TotalSites</div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-3 col-xl-2">
+        <a class="card stat shadow-sm text-decoration-none text-reset" asp-controller="Home" asp-action="Index">
+            <div class="card-body">
+                <div class="text-muted">إجمالي السكن</div>
+                <div class="display-5 fw-bold">@Model.TotalRooms</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold">المشاريع — الموظفون والسيارات والركاب</div>
+    <div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>المشروع</th><th>الموظفون</th><th>السيارات</th><th>الركاب</th></tr></thead><tbody>
+    @foreach (var p in Model.Projects) { <tr><td class="fw-semibold">@p.Name</td><td>@p.Employees</td><td>@p.Vehicles</td><td>@p.Passengers</td></tr> }
+    @if (!Model.Projects.Any()) { <tr><td colspan="4" class="text-center text-muted py-4">لا توجد مشاريع حتى الآن</td></tr> }
+    </tbody></table></div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold">السكن حسب المنطقة</div>
+    <div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>المنطقة</th><th>إجمالي الغرف</th><th>مشغول</th><th>فارغ</th></tr></thead><tbody>
+    @foreach (var s in Model.Sites) { <tr><td class="fw-semibold">@s.Name</td><td>@s.Rooms</td><td><span class="badge text-bg-success">@s.Occupied</span></td><td><span class="badge text-bg-secondary">@s.Empty</span></td></tr> }
+    @if (!Model.Sites.Any()) { <tr><td colspan="4" class="text-center text-muted py-4">لا توجد مناطق حتى الآن</td></tr> }
+    </tbody></table></div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white fw-bold">تفصيل السكن حسب كل عمارة</div>
+    <div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead><tr><th>المنطقة</th><th>العمارة</th><th>اسم العمارة</th><th>إجمالي الغرف</th><th>مشغول</th><th>فارغ</th></tr></thead><tbody>
+    @foreach (var b in Model.Buildings) { <tr><td>@b.SiteName</td><td class="fw-bold">@b.Number</td><td>@b.Name</td><td>@b.Rooms</td><td><span class="badge text-bg-success">@b.Occupied</span></td><td><span class="badge text-bg-secondary">@b.Empty</span></td></tr> }
+    @if (!Model.Buildings.Any()) { <tr><td colspan="6" class="text-center text-muted py-4">لا توجد عمارات حتى الآن</td></tr> }
+    </tbody></table></div>
+</div>

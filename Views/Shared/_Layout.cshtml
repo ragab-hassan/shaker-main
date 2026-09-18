@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>نظام إدارة السكن</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="@(Url.Content("~/css/site.css"))" />
+</head>
+<body class="app-root">
+    <a class="visually-hidden-focusable" href="#main">تخطي إلى المحتوى</a>
+
+    <nav class="navbar navbar-expand-md site-navbar">
+        <div class="container-fluid site-navbar-inner">
+            <div class="site-brand-wrap">
+                <div class="site-brand-logo" aria-label="شعار شكر للاستشارات">
+                    <span class="brand-main">SHAKER</span>
+                    <span class="brand-sub">CONSULTANCY GROUP</span>
+                </div>
+            </div>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="navbar-nav site-main-menu w-100 gap-2">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Home" asp-action="Index">الرئيسية</a>
+                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Employees" asp-action="Index">الموظفون</a>
+                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Projects" asp-action="Index">المشاريع</a>
+                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Locations" asp-action="Index">السكن والعمارات</a>
+                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="PendingHousingAssignments" asp-action="Index">تعيينات منتظرة</a>
+                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Vehicles" asp-action="Index">العربات والنقل</a>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="Users" asp-action="Index">المستخدمون</a>
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="Roles" asp-action="Index">الأدوار</a>
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="AuditLogs" asp-action="Index">سجل التعديلات</a>
+                        }
+                    }
+                </div>
+
+                <div class="d-flex align-items-center gap-2 ms-2 site-user-actions">
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <span class="text-white-50 small">@User.FindFirst("FullName")?.Value</span>
+                        <a asp-controller="Account" asp-action="Logout" class="btn btn-outline-light btn-sm">تسجيل الخروج</a>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-light btn-sm">تسجيل الدخول</a>
+                    }
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main" class="container-fluid p-3 p-md-4">@RenderBody()</main>
+
+    <footer class="site-footer mt-4 py-3">
+        <div class="container text-center text-muted small">© 2026 نظام إدارة السكن بواسطة رجب حسن — جميع الحقوق محفوظة</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

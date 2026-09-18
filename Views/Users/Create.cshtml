@@ -1,0 +1,41 @@
+@model AppUser
+
+<h2>إضافة مستخدم</h2>
+<form asp-action="Create" method="post">
+    @Html.AntiForgeryToken()
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">اسم المستخدم</label>
+            <input asp-for="UserName" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">الاسم الكامل</label>
+            <input asp-for="FullName" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">البريد الإلكتروني</label>
+            <input asp-for="Email" class="form-control" type="email" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">كلمة المرور</label>
+            <input asp-for="PasswordHash" class="form-control" type="password" />
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">الأدوار</label>
+            @foreach (var role in (ViewBag.Roles as IEnumerable<AppRole>) ?? Enumerable.Empty<AppRole>())
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selectedRoles" value="@role.Id" />
+                    <label class="form-check-label">@role.Name</label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-success">حفظ</button>
+        <a asp-action="Index" class="btn btn-secondary">إلغاء</a>
+    </div>
+</form>

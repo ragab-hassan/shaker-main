@@ -1,0 +1,2 @@
+@model Apartment
+<h2>إضافة شقة</h2><form asp-action="CreateApartment" method="post"><input type="hidden" asp-for="BuildingId" /><div class="mb-3"><label class="form-label">رقم الشقة</label><input asp-for="Number" class="form-control" type="number" /></div><button class="btn btn-success">حفظ</button> <a asp-action="Index" class="btn btn-secondary">إلغاء</a></form>

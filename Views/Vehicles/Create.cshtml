@@ -1,0 +1,2 @@
+@model Vehicle
+<h2>إضافة عربية</h2><form asp-action="Create" method="post">@Html.AntiForgeryToken()<partial name="_Form" model="Model" /><div class="mt-4"><button type="submit" class="btn btn-success">حفظ</button> <a asp-action="Index" class="btn btn-secondary">إلغاء</a></div></form>

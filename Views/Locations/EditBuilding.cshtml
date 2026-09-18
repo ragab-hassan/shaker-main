@@ -1,0 +1,2 @@
+@model Building
+<h2>تعديل العمارة</h2><form asp-action="EditBuilding" method="post"><input type="hidden" asp-for="Id" /><partial name="_BuildingForm" model="Model" /><button class="btn btn-success mt-3">حفظ</button> <a asp-action="Index" class="btn btn-secondary mt-3">إلغاء</a></form>

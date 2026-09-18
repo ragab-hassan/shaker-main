@@ -1,0 +1,2 @@
+@model Apartment
+<div asp-validation-summary="ModelOnly" class="text-danger"></div><div class="mb-3"><label asp-for="BuildingId" class="form-label">العمارة</label><select asp-for="BuildingId" class="form-select">@foreach(var b in ViewBag.Buildings){<option value="@b.Id">@b.Site.Name — عمارة @b.Number</option>}</select></div><div class="mb-3"><label asp-for="Number" class="form-label">رقم الشقة</label><input asp-for="Number" class="form-control" type="number" /></div>

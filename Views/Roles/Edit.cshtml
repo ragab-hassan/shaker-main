@@ -1,0 +1,45 @@
+@model AppRole
+
+<div class="role-form-card card shadow-sm border-0">
+    <div class="card-header bg-white border-0 pb-0 pt-4 px-4">
+        <h2 class="mb-0">تعديل الدور</h2>
+    </div>
+    <div class="card-body p-4">
+        <form asp-action="Edit" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">اسم الدور</label>
+                    <input asp-for="Name" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الوصف</label>
+                    <input asp-for="Description" class="form-control" />
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">الصلاحيات</label>
+                    <div class="permission-grid">
+                        @foreach (var permission in (ViewBag.Permissions as IEnumerable<Permission>) ?? Enumerable.Empty<Permission>())
+                        {
+                            var isChecked = ((ViewBag.SelectedPermissions as IEnumerable<int>) ?? Enumerable.Empty<int>()).Contains(permission.Id);
+                            <label class="permission-option">
+                                <input class="form-check-input" type="checkbox" name="selectedPermissions" value="@permission.Id" checked="@(isChecked ? "checked" : null)" />
+                                <span>
+                                    <strong>@permission.Name</strong>
+                                    <small>@permission.Description</small>
+                                </span>
+                            </label>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-success">حفظ</button>
+                <a asp-action="Index" class="btn btn-secondary">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
