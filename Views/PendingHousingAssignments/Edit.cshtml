@@ -3,11 +3,36 @@
 <form asp-action="Edit" method="post">
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
     <div class="row g-3">
         <div class="col-md-6">
-            <label asp-for="EmployeeName" class="form-label">اسم الموظف</label>
-            <input asp-for="EmployeeName" class="form-control" placeholder="اكتب اسم الموظف" />
+            <label asp-for="EmployeeId" class="form-label">الموظف</label>
+            @if (Model.IsApplied)
+            {
+                <input type="hidden" asp-for="EmployeeId" />
+                <input value="@(Model.Employee?.FullName ?? Model.EmployeeName)" class="form-control" disabled />
+            }
+            else
+            {
+                <select asp-for="EmployeeId" class="form-select">
+                    <option value="">-- موظف جديد --</option>
+                    @foreach (var employee in ViewBag.Employees)
+                    {
+                        <option value="@employee.Id">@employee.FullName (@employee.EmployeeCode)</option>
+                    }
+                </select>
+            }
+        </div>
+        <div class="col-md-6">
+            <label asp-for="EmployeeName" class="form-label">اسم الموظف الجديد (عند اختيار موظف جديد)</label>
+            @if (Model.IsApplied)
+            {
+                <input asp-for="EmployeeName" class="form-control" readonly />
+            }
+            else
+            {
+                <input asp-for="EmployeeName" class="form-control" placeholder="اكتب اسم الموظف الجديد" />
+            }
         </div>
         <div class="col-md-6">
             <label asp-for="JobTitle" class="form-label">الوظيفة</label>
@@ -25,23 +50,39 @@
         </div>
         <div class="col-md-6">
             <label asp-for="SiteId" class="form-label">المنطقة</label>
-            <select asp-for="SiteId" class="form-select">
-                <option value="">-- اختر المنطقة --</option>
-                @foreach (var s in ViewBag.Sites)
+                @if (Model.IsApplied)
                 {
-                    <option value="@s.Id">@s.Name</option>
+                    <input type="hidden" asp-for="SiteId" />
+                    <input value="@(((IEnumerable<Site>)ViewBag.Sites).FirstOrDefault(site => site.Id == Model.SiteId)?.Name)" class="form-control" disabled />
                 }
-            </select>
+                else
+                {
+                    <select asp-for="SiteId" class="form-select">
+                        <option value="">-- اختر المنطقة --</option>
+                        @foreach (var site in ViewBag.Sites)
+                        {
+                            <option value="@site.Id">@site.Name</option>
+                        }
+                    </select>
+                }
         </div>
         <div class="col-md-12">
             <label asp-for="RoomId" class="form-label">الغرفة</label>
-            <select asp-for="RoomId" class="form-select">
-                <option value="">-- اختر غرفة شاغرة --</option>
-                @foreach (var r in ViewBag.Rooms)
-                {
-                    <option value="@r.Id">@r.Apartment?.Building?.Site?.Name - عمارة @r.Apartment?.Building?.Number - شقة @r.Apartment?.Number - غرفة @r.Number</option>
-                }
-            </select>
+            @if (Model.IsApplied)
+            {
+                <input type="hidden" asp-for="RoomId" />
+                <input value="@(Model.Room?.Apartment?.Building?.Site?.Name) - عمارة @Model.Room?.Apartment?.Building?.Number - شقة @Model.Room?.Apartment?.Number - غرفة @Model.Room?.Number" class="form-control" disabled />
+            }
+            else
+            {
+                <select asp-for="RoomId" class="form-select">
+                    <option value="">-- اختر غرفة شاغرة --</option>
+                    @foreach (var r in ViewBag.Rooms)
+                    {
+                        <option value="@r.Id" data-site-id="@r.Apartment?.Building?.SiteId">@r.Apartment?.Building?.Site?.Name - عمارة @r.Apartment?.Building?.Number - شقة @r.Apartment?.Number - غرفة @r.Number</option>
+                    }
+                </select>
+            }
         </div>
         <div class="col-md-12">
             <label asp-for="HousingDate" class="form-label">تاريخ التسكين</label>
@@ -53,3 +94,28 @@
         <a asp-action="Index" class="btn btn-secondary">إلغاء</a>
     </div>
 </form>
+
+@if (!Model.IsApplied)
+{
+    <script>
+    (() => {
+        const siteFilter = document.getElementById("SiteId");
+        const roomFilter = document.getElementById("RoomId");
+        if (!siteFilter || !roomFilter) return;
+
+        const filterRooms = () => {
+            for (const option of roomFilter.options) {
+                if (!option.value) continue;
+                option.hidden = !siteFilter.value || option.dataset.siteId !== siteFilter.value;
+            }
+            if (roomFilter.selectedOptions[0]?.hidden) roomFilter.value = "";
+        };
+
+        siteFilter.addEventListener("change", () => {
+            roomFilter.value = "";
+            filterRooms();
+        });
+        filterRooms();
+    })();
+    </script>
+}

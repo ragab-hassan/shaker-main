@@ -2,11 +2,21 @@
 <h2>تعيين منتظر</h2>
 <form asp-action="Create" method="post">
     @Html.AntiForgeryToken()
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
     <div class="row g-3">
         <div class="col-md-6">
-            <label asp-for="EmployeeName" class="form-label">اسم الموظف</label>
-            <input asp-for="EmployeeName" class="form-control" placeholder="اكتب اسم الموظف" />
+            <label asp-for="EmployeeId" class="form-label">الموظف</label>
+            <select asp-for="EmployeeId" class="form-select">
+                <option value="">-- موظف جديد --</option>
+                @foreach (var employee in ViewBag.Employees)
+                {
+                    <option value="@employee.Id">@employee.FullName (@employee.EmployeeCode)</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="EmployeeName" class="form-label">اسم الموظف الجديد (عند اختيار موظف جديد)</label>
+            <input asp-for="EmployeeName" class="form-control" placeholder="اكتب اسم الموظف الجديد" />
         </div>
         <div class="col-md-6">
             <label asp-for="JobTitle" class="form-label">الوظيفة</label>
@@ -38,7 +48,7 @@
                 <option value="">-- اختر غرفة شاغرة --</option>
                 @foreach (var r in ViewBag.Rooms)
                 {
-                    <option value="@r.Id">@r.Apartment?.Building?.Site?.Name - عمارة @r.Apartment?.Building?.Number - شقة @r.Apartment?.Number - غرفة @r.Number</option>
+                    <option value="@r.Id" data-site-id="@r.Apartment?.Building?.SiteId">@r.Apartment?.Building?.Site?.Name - عمارة @r.Apartment?.Building?.Number - شقة @r.Apartment?.Number - غرفة @r.Number</option>
                 }
             </select>
         </div>
@@ -52,3 +62,25 @@
         <a asp-action="Index" class="btn btn-secondary">إلغاء</a>
     </div>
 </form>
+
+<script>
+(() => {
+    const siteFilter = document.getElementById("SiteId");
+    const roomFilter = document.getElementById("RoomId");
+    if (!siteFilter || !roomFilter) return;
+
+    const filterRooms = () => {
+        for (const option of roomFilter.options) {
+            if (!option.value) continue;
+            option.hidden = !siteFilter.value || option.dataset.siteId !== siteFilter.value;
+        }
+        if (roomFilter.selectedOptions[0]?.hidden) roomFilter.value = "";
+    };
+
+    siteFilter.addEventListener("change", () => {
+        roomFilter.value = "";
+        filterRooms();
+    });
+    filterRooms();
+})();
+</script>

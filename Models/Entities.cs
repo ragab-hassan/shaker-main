@@ -155,8 +155,8 @@ public class HousingAssignment
 public class PendingHousingAssignment
 {
     public int Id { get; set; }
-    [Required, Display(Name = "اسم الموظف")] public string EmployeeName { get; set; } = "";
-    public int EmployeeId { get; set; }
+    [Display(Name = "اسم الموظف")] public string EmployeeName { get; set; } = "";
+    public int? EmployeeId { get; set; }
     public Employee? Employee { get; set; }
     [Required, Display(Name = "الوظيفة")] public string JobTitle { get; set; } = "";
     [Required, Display(Name = "المشروع")] public int ProjectId { get; set; }

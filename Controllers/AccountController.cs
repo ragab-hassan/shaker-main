@@ -26,12 +26,15 @@ public class AccountController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Login(string userName, string password, string? returnUrl = null)
+    public async Task<IActionResult> Login(string? userName, string? password, string? returnUrl = null)
     {
-        var user = await _db.AppUsers
-            .FirstOrDefaultAsync(u => u.UserName == userName && u.IsActive);
+        var user = string.IsNullOrWhiteSpace(userName)
+            ? null
+            : await _db.AppUsers.FirstOrDefaultAsync(u => u.UserName == userName.Trim() && u.IsActive);
 
-        if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+        if (user == null
+            || string.IsNullOrEmpty(password)
+            || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
         {
             ModelState.AddModelError(string.Empty, "اسم المستخدم أو كلمة المرور غير صحيحة");
             ViewBag.ReturnUrl = returnUrl;
@@ -46,7 +49,7 @@ public class AccountController : Controller
         return RedirectToAction("Index", "Home");
     }
 
-    [Authorize]
+    [Authorize, HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync();

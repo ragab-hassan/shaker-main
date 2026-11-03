@@ -6,21 +6,29 @@ namespace HousingManagementWeb.Services;
 
 public static class AppSeedData
 {
-    public static async Task SeedAsync(AppDbContext db)
+    public static async Task SeedAsync(AppDbContext db, string? bootstrapAdminPassword)
     {
-        if (!await db.AppRoles.AnyAsync())
+        if (!string.IsNullOrWhiteSpace(bootstrapAdminPassword) && bootstrapAdminPassword.Length < 12)
         {
-            var adminRole = new AppRole { Name = "Admin", Description = "مدير النظام", IsSystemRole = true };
-            var managerRole = new AppRole { Name = "Manager", Description = "مدير", IsSystemRole = true };
-            var employeeRole = new AppRole { Name = "Employee", Description = "موظف", IsSystemRole = true };
-            db.AppRoles.AddRange(adminRole, managerRole, employeeRole);
-            await db.SaveChangesAsync();
+            throw new InvalidOperationException("BootstrapAdmin:Password must be at least 12 characters.");
         }
 
-        var roles = await db.AppRoles.ToListAsync();
-        var adminRoleEntity = roles.FirstOrDefault(r => r.Name == "Admin");
-        var managerRoleEntity = roles.FirstOrDefault(r => r.Name == "Manager");
-        var employeeRoleEntity = roles.FirstOrDefault(r => r.Name == "Employee");
+        var roles = new[]
+        {
+            new AppRole { Name = "Admin", Description = "مدير النظام", IsSystemRole = true },
+            new AppRole { Name = "Manager", Description = "مدير", IsSystemRole = true },
+            new AppRole { Name = "HR", Description = "الموارد البشرية", IsSystemRole = true },
+            new AppRole { Name = "Employee", Description = "موظف", IsSystemRole = true }
+        };
+
+        foreach (var role in roles)
+        {
+            if (!await db.AppRoles.AnyAsync(existing => existing.Name == role.Name))
+            {
+                db.AppRoles.Add(role);
+            }
+        }
+        await db.SaveChangesAsync();
 
         var permissions = new[]
         {
@@ -36,85 +44,82 @@ public static class AppSeedData
 
         foreach (var permission in permissions)
         {
-            if (!await db.Permissions.AnyAsync(p => p.Name == permission.Name))
+            if (!await db.Permissions.AnyAsync(existing => existing.Name == permission.Name))
             {
                 db.Permissions.Add(permission);
             }
         }
         await db.SaveChangesAsync();
 
-        var permissionList = await db.Permissions.ToListAsync();
-
-        foreach (var role in new[] { adminRoleEntity, managerRoleEntity, employeeRoleEntity })
+        var permissionsByName = await db.Permissions.ToDictionaryAsync(permission => permission.Name);
+        var rolePermissions = new Dictionary<string, string[]>
         {
-            if (role == null) continue;
+            ["Admin"] = permissions.Select(permission => permission.Name).ToArray(),
+            ["Manager"] = [AppPermissions.ViewDashboard],
+            ["HR"] = [AppPermissions.ViewDashboard, AppPermissions.ManageHousingAssignments],
+            ["Employee"] = [AppPermissions.ViewDashboard]
+        };
 
-            var rolePermissionNames = role.Name switch
+        foreach (var role in await db.AppRoles.ToListAsync())
+        {
+            if (!rolePermissions.TryGetValue(role.Name, out var permissionNames)) continue;
+
+            foreach (var permissionName in permissionNames)
             {
-                "Admin" => new[]
-                {
-                    AppPermissions.ViewDashboard,
-                    AppPermissions.ManageEmployees,
-                    AppPermissions.ManageProjects,
-                    AppPermissions.ManageLocations,
-                    AppPermissions.ManageVehicles,
-                    AppPermissions.ManageHousingAssignments,
-                    AppPermissions.ManageUsers,
-                    AppPermissions.ManageRoles
-                },
-                "Manager" => new[]
-                {
-                    AppPermissions.ViewDashboard,
-                    
-                },
-                "HR" => new[]
-                {
-                    AppPermissions.ViewDashboard
-                    AppPermissions.ManageHousingAssignments,
-                },
-                "Employee" => new[]
-                {
-                    AppPermissions.ViewDashboard
-                    AppPermissions.ManageEmployees,
-                },
-                _ => Array.Empty<string>()
-            };
-
-            foreach (var permissionName in rolePermissionNames)
-            {
-                var permission = await db.Permissions.FirstOrDefaultAsync(p => p.Name == permissionName);
-                if (permission == null) continue;
-
-                var exists = await db.RolePermissions.AnyAsync(rp => rp.RoleId == role.Id && rp.PermissionId == permission.Id);
+                var permission = permissionsByName[permissionName];
+                var exists = await db.RolePermissions.AnyAsync(rolePermission =>
+                    rolePermission.RoleId == role.Id && rolePermission.PermissionId == permission.Id);
                 if (!exists)
                 {
                     db.RolePermissions.Add(new RolePermission { RoleId = role.Id, PermissionId = permission.Id });
                 }
             }
         }
-
         await db.SaveChangesAsync();
 
-        if (!await db.AppUsers.AnyAsync())
+        var adminRole = await db.AppRoles.SingleAsync(role => role.Name == "Admin");
+        var adminUser = await db.AppUsers.FirstOrDefaultAsync(user => user.UserName == "admin");
+        var ensureBootstrapRole = false;
+        if (adminUser != null && BCrypt.Net.BCrypt.Verify("", adminUser.PasswordHash))
         {
-            var adminUser = new AppUser
+            ensureBootstrapRole = true;
+            if (string.IsNullOrWhiteSpace(bootstrapAdminPassword))
+            {
+                adminUser.IsActive = false;
+            }
+            else
+            {
+                adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(bootstrapAdminPassword);
+                adminUser.IsActive = true;
+            }
+            await db.SaveChangesAsync();
+        }
+
+        if (adminUser == null && !string.IsNullOrWhiteSpace(bootstrapAdminPassword))
+        {
+            var adminEmail = "admin@housing.local";
+            if (await db.AppUsers.AnyAsync(user => user.Email == adminEmail))
+            {
+                adminEmail = $"admin-bootstrap-{Guid.NewGuid():N}@housing.local";
+            }
+            adminUser = new AppUser
             {
                 UserName = "admin",
                 FullName = "مدير النظام",
-                Email = "admin@housing.local",
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(""),
+                Email = adminEmail,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(bootstrapAdminPassword),
                 IsActive = true,
                 CreatedAt = DateTime.Now
             };
             db.AppUsers.Add(adminUser);
             await db.SaveChangesAsync();
+            ensureBootstrapRole = true;
+        }
 
-            var adminUserRole = new UserRole
-            {
-                UserId = adminUser.Id,
-                RoleId = adminRoleEntity?.Id ?? 1
-            };
-            db.UserRoles.Add(adminUserRole);
+        if (ensureBootstrapRole && adminUser != null && !await db.UserRoles.AnyAsync(userRole =>
+                userRole.UserId == adminUser.Id && userRole.RoleId == adminRole.Id))
+        {
+            db.UserRoles.Add(new UserRole { UserId = adminUser.Id, RoleId = adminRole.Id });
             await db.SaveChangesAsync();
         }
     }

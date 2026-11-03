@@ -1,4 +1,7 @@
 @model Employee
+@{
+    var selectedSiteId = ViewBag.SelectedSiteId as int?;
+}
 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 <div class="row g-3">
  <div class="col-md-6"><label asp-for="FullName" class="form-label"></label><input asp-for="FullName" class="form-control" /></div>
@@ -9,8 +12,52 @@
  <div class="col-md-3"><label asp-for="Phone" class="form-label"></label><input asp-for="Phone" class="form-control" /></div>
  <div class="col-md-4"><label asp-for="ProjectId" class="form-label">المشروع</label><select asp-for="ProjectId" class="form-select"><option value="">-- بدون مشروع --</option>@foreach(var p in ViewBag.Projects){<option value="@p.Id">@p.Name</option>}</select></div>
  <div class="col-md-8"><label asp-for="JobTitle" class="form-label"></label><input asp-for="JobTitle" class="form-control" /></div>
- <div class="col-md-12"><label asp-for="RoomId" class="form-label">الغرفة / السكن</label><select asp-for="RoomId" class="form-select"><option value="">-- بدون تسكين --</option>@foreach(var r in ViewBag.Rooms){<option value="@r.Id">@r.Apartment.Building.Site.Name - عمارة @r.Apartment.Building.Number - شقة @r.Apartment.Number - غرفة @r.Number @(r.IsOccupied ? "(مشغولة)" : "(شاغرة)")</option>}</select></div>
+ <div class="col-md-6">
+  <label for="employee-site-filter" class="form-label">المنطقة</label>
+  <select id="employee-site-filter" name="siteId" class="form-select">
+   <option value="">-- اختر المنطقة --</option>
+   @foreach (var site in ViewBag.Sites)
+   {
+    <option value="@site.Id" selected="@(selectedSiteId == site.Id ? "selected" : null)">@site.Name</option>
+   }
+  </select>
+ </div>
+ <div class="col-md-6">
+  <label asp-for="RoomId" class="form-label">الغرفة / السكن</label>
+  <select asp-for="RoomId" id="employee-room-filter" class="form-select">
+   <option value="">-- بدون تسكين --</option>
+   @foreach (var room in ViewBag.Rooms)
+   {
+    <option value="@room.Id" data-site-id="@room.Apartment.Building.SiteId">
+     @room.Apartment.Building.Site.Name - عمارة @room.Apartment.Building.Number - شقة @room.Apartment.Number - غرفة @room.Number
+    </option>
+   }
+  </select>
+  <span asp-validation-for="RoomId" class="text-danger"></span>
+ </div>
  <div class="col-md-4"><label asp-for="HousingDate" class="form-label"></label><input asp-for="HousingDate" type="date" class="form-control" /></div>
  <div class="col-md-4"><label asp-for="ResignationDate" class="form-label"></label><input asp-for="ResignationDate" type="date" class="form-control" /></div>
  <div class="col-md-4 d-flex align-items-end"><div class="form-check"><input asp-for="IsActive" class="form-check-input" /><label asp-for="IsActive" class="form-check-label">موظف نشط</label></div></div>
 </div>
+
+<script>
+(() => {
+    const siteFilter = document.getElementById("employee-site-filter");
+    const roomFilter = document.getElementById("employee-room-filter");
+    if (!siteFilter || !roomFilter) return;
+
+    const filterRooms = () => {
+        for (const option of roomFilter.options) {
+            if (!option.value) continue;
+            option.hidden = !siteFilter.value || option.dataset.siteId !== siteFilter.value;
+        }
+        if (roomFilter.selectedOptions[0]?.hidden) roomFilter.value = "";
+    };
+
+    siteFilter.addEventListener("change", () => {
+        roomFilter.value = "";
+        filterRooms();
+    });
+    filterRooms();
+})();
+</script>

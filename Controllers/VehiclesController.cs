@@ -6,14 +6,21 @@ using HousingManagementWeb.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace HousingManagementWeb.Controllers;
 
-[Authorize]
+[Authorize(Policy = AppPermissions.ManageVehicles)]
 public class VehiclesController : Controller
 {
     private readonly AppDbContext _db;
-    public VehiclesController(AppDbContext db) => _db = db;
+    private readonly ILogger<VehiclesController> _logger;
+
+    public VehiclesController(AppDbContext db, ILogger<VehiclesController> logger)
+    {
+        _db = db;
+        _logger = logger;
+    }
 
     public async Task<IActionResult> Index()
     {
@@ -91,10 +98,11 @@ public class VehiclesController : Controller
         }
         catch (Exception ex)
         {
-            ModelState.AddModelError(string.Empty, "فشل حفظ السيارة: " + ex.Message);
+            _logger.LogError(ex, "Failed to create a vehicle.");
+            ModelState.AddModelError(string.Empty, "تعذر حفظ السيارة. حاول مرة أخرى.");
             await LoadLists();
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return BadRequest(new { success = false, errors = new { _global = new[] { ex.Message } } });
+                return BadRequest(new { success = false, errors = new { _global = new[] { "تعذر حفظ السيارة. حاول مرة أخرى." } } });
             return View(model);
         }
     }
@@ -108,11 +116,19 @@ public class VehiclesController : Controller
         PrepareVehicle(model);
         ValidateVehicle(model);
         if (!ModelState.IsValid) { await LoadLists(); return View(model); }
+
+        await using var transaction = await _db.Database.BeginTransactionAsync(
+            System.Data.IsolationLevel.Serializable);
+        await ValidateVehiclePassengerCapacity(model);
+        if (!ModelState.IsValid) { await LoadLists(); return View(model); }
+
         await ApplyRelations(model);
         _db.Update(model); await _db.SaveChangesAsync();
+        await transaction.CommitAsync();
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id) { var x = await _db.Vehicles.FindAsync(id); if (x != null) { _db.Vehicles.Remove(x); await _db.SaveChangesAsync(); } return RedirectToAction(nameof(Index)); }
 
     private void PrepareVehicle(Vehicle model)
@@ -134,6 +150,30 @@ public class VehiclesController : Controller
         if (string.IsNullOrWhiteSpace(model.VehicleNumber)) ModelState.AddModelError(nameof(model.VehicleNumber), "رقم السيارة مطلوب");
         if (!model.ProjectId.HasValue) ModelState.AddModelError(nameof(model.ProjectId), "اختيار المشروع مطلوب");
         if (model.VehicleType is not ("ملاكي" or "هاي اس")) ModelState.AddModelError(nameof(model.VehicleType), "اختر نوع السيارة");
+    }
+
+    private async Task ValidateVehiclePassengerCapacity(Vehicle model)
+    {
+        var existingVehicle = await _db.Vehicles
+            .AsNoTracking()
+            .Include(vehicle => vehicle.Passengers)
+            .FirstOrDefaultAsync(vehicle => vehicle.Id == model.Id);
+        if (existingVehicle == null) return;
+
+        var seatHolders = existingVehicle.Passengers
+            .Select(passenger => passenger.EmployeeId)
+            .ToHashSet();
+        if (model.DriverEmployeeId.HasValue)
+        {
+            seatHolders.Add(model.DriverEmployeeId.Value);
+        }
+
+        if (seatHolders.Count > model.Capacity)
+        {
+            ModelState.AddModelError(
+                nameof(model.VehicleType),
+                $"لا يمكن تغيير نوع السيارة؛ بها {seatHolders.Count} مقاعد محجوزة والسعة الجديدة {model.Capacity}.");
+        }
     }
 
     private async Task ApplyRelations(Vehicle model)

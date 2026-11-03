@@ -257,7 +257,7 @@ namespace HousingManagementWeb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("EmployeeId")
+                    b.Property<int?>("EmployeeId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("EmployeeName")
@@ -551,8 +551,7 @@ namespace HousingManagementWeb.Migrations
                     b.HasOne("HousingManagementWeb.Models.Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("HousingManagementWeb.Models.Project", "Project")
                         .WithMany()

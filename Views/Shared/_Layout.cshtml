@@ -1,3 +1,17 @@
+@inject Microsoft.AspNetCore.Authorization.IAuthorizationService AuthorizationService
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated == true;
+    var canManageEmployees = isAuthenticated
+        && (await AuthorizationService.AuthorizeAsync(User, null, AppPermissions.ManageEmployees)).Succeeded;
+    var canManageProjects = isAuthenticated
+        && (await AuthorizationService.AuthorizeAsync(User, null, AppPermissions.ManageProjects)).Succeeded;
+    var canManageLocations = isAuthenticated
+        && (await AuthorizationService.AuthorizeAsync(User, null, AppPermissions.ManageLocations)).Succeeded;
+    var canManageAssignments = isAuthenticated
+        && (await AuthorizationService.AuthorizeAsync(User, null, AppPermissions.ManageHousingAssignments)).Succeeded;
+    var canManageVehicles = isAuthenticated
+        && (await AuthorizationService.AuthorizeAsync(User, null, AppPermissions.ManageVehicles)).Succeeded;
+}
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -27,14 +41,29 @@
 
             <div class="collapse navbar-collapse" id="mainNav">
                 <div class="navbar-nav site-main-menu w-100 gap-2">
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @if (isAuthenticated)
                     {
                         <a class="nav-link btn btn-ghost btn-sm" asp-controller="Home" asp-action="Index">الرئيسية</a>
-                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Employees" asp-action="Index">الموظفون</a>
-                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Projects" asp-action="Index">المشاريع</a>
-                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Locations" asp-action="Index">السكن والعمارات</a>
-                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="PendingHousingAssignments" asp-action="Index">تعيينات منتظرة</a>
-                        <a class="nav-link btn btn-ghost btn-sm" asp-controller="Vehicles" asp-action="Index">العربات والنقل</a>
+                        @if (canManageEmployees)
+                        {
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="Employees" asp-action="Index">الموظفون</a>
+                        }
+                        @if (canManageProjects)
+                        {
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="Projects" asp-action="Index">المشاريع</a>
+                        }
+                        @if (canManageLocations)
+                        {
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="Locations" asp-action="Index">السكن والعمارات</a>
+                        }
+                        @if (canManageAssignments)
+                        {
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="PendingHousingAssignments" asp-action="Index">تعيينات منتظرة</a>
+                        }
+                        @if (canManageVehicles)
+                        {
+                            <a class="nav-link btn btn-ghost btn-sm" asp-controller="Vehicles" asp-action="Index">العربات والنقل</a>
+                        }
                         @if (User.IsInRole("Admin"))
                         {
                             <a class="nav-link btn btn-ghost btn-sm" asp-controller="Users" asp-action="Index">المستخدمون</a>
@@ -45,10 +74,13 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-2 ms-2 site-user-actions">
-                    @if (User.Identity?.IsAuthenticated == true)
+                    @if (isAuthenticated)
                     {
                         <span class="text-white-50 small">@User.FindFirst("FullName")?.Value</span>
-                        <a asp-controller="Account" asp-action="Logout" class="btn btn-outline-light btn-sm">تسجيل الخروج</a>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-outline-light btn-sm">تسجيل الخروج</button>
+                        </form>
                     }
                     else
                     {

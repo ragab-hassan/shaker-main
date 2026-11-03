@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace HousingManagementWeb.Controllers;
 
-[Authorize]
+[Authorize(Policy = AppPermissions.ManageLocations)]
 public class LocationsController : Controller
 {
     private readonly AppDbContext _db;
@@ -26,6 +26,7 @@ public class LocationsController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> EditSite(int id, Site x)
     { if (id != x.Id) return NotFound(); if (!ModelState.IsValid) return View(x); _db.Update(x); await _db.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteSite(int id)
     { var x = await _db.Sites.FindAsync(id); if (x != null) { _db.Sites.Remove(x); await _db.SaveChangesAsync(); } return RedirectToAction(nameof(Index)); }
 
@@ -37,6 +38,7 @@ public class LocationsController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> EditBuilding(int id, Building x)
     { if (id != x.Id) return NotFound(); if (!ModelState.IsValid) { await LoadSites(); return View(x); } _db.Update(x); await _db.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteBuilding(int id)
     { var x = await _db.Buildings.FindAsync(id); if (x != null) { _db.Buildings.Remove(x); await _db.SaveChangesAsync(); } return RedirectToAction(nameof(Index)); }
 
@@ -48,6 +50,7 @@ public class LocationsController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> EditApartment(int id, Apartment x)
     { if (id != x.Id) return NotFound(); if (!ModelState.IsValid) { await LoadBuildings(); return View(x); } _db.Update(x); await _db.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteApartment(int id)
     { var x = await _db.Apartments.FindAsync(id); if (x != null) { _db.Apartments.Remove(x); await _db.SaveChangesAsync(); } return RedirectToAction(nameof(Index)); }
 
@@ -59,6 +62,7 @@ public class LocationsController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> EditRoom(int id, Room x)
     { if (id != x.Id) return NotFound(); if (!ModelState.IsValid) { await LoadApartments(); return View(x); } _db.Update(x); await _db.SaveChangesAsync(); return RedirectToAction(nameof(Index)); }
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteRoom(int id)
     { var x = await _db.Rooms.FindAsync(id); if (x != null) { _db.Rooms.Remove(x); await _db.SaveChangesAsync(); } return RedirectToAction(nameof(Index)); }
 

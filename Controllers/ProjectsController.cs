@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 namespace HousingManagementWeb.Controllers;
 
-[Authorize]
+[Authorize(Policy = AppPermissions.ManageProjects)]
 public class ProjectsController : Controller
 {
     private readonly AppDbContext _db;
@@ -17,5 +17,6 @@ public class ProjectsController : Controller
     public async Task<IActionResult> Edit(int id){var x=await _db.Projects.FindAsync(id);return x==null?NotFound():View(x);}
     [HttpPost,ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(Project model){if(!ModelState.IsValid)return View(model);_db.Update(model);await _db.SaveChangesAsync();return RedirectToAction(nameof(Index));}
+    [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id){var x=await _db.Projects.FindAsync(id);if(x!=null){_db.Remove(x);await _db.SaveChangesAsync();}return RedirectToAction(nameof(Index));}
 }
